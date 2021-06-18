@@ -1,4 +1,4 @@
-#! /usr/local/bin/bash
+#!/usr/local/bin/bash
 
 die () {
     echo >&2 "$@"
@@ -18,12 +18,14 @@ silverBuy() {
     header='Content-Type:application/x-www-form-urlencoded'
     baseUrl='http://ps7.idlechampions.com/~idledragons/post.php?call='
     callType='buysoftcurrencychest'
+    #use alpha5 code
+    params='&language_id=1&timestamp=0&request_id=0&network_id=11&mobile_client_version=999&user_id='$idleID'&hash='$hash'&instance_id='$instanceID'&chest_type_id=2&game_instance_id=1&count=alpha5'
+    curl -sX POST -H "$header" "$baseUrl$callType$params" >> ./results/results-$time.json
     params='&user_id='$idleID'&hash='$hash'&instance_id='$instanceID'&chest_type_id=1&game_instance_id=1&count=100'
-
     while [[ $remainingGems -ge 5000 ]]; do
-        curl -sX POST -H "$header" "$baseUrl$callType$params" >> results-$time.json
-        remainingGems=$(jq '.currency_remaining | select ( . != null )' <results-$time.json | sort -h | head -1)
-        echo "remaining: $remainingGems"
+        curl -sX POST -H "$header" "$baseUrl$callType$params" >> ./results/results-$time.json
+        remainingGems=$(jq '.currency_remaining | select ( . != null )' <./results/results-$time.json | sort -h | head -1)
+        echo "remaining gems: $remainingGems"
         sleep 2
     done;
     echo "Done buying Silver chests."
@@ -38,16 +40,15 @@ silverOpen() {
     params='&gold_per_second=0&checksum=4c5f019b6fc6eefa4d47d21cfaf1bc68&user_id='$idleID'&hash='$hash'&instance_id='$instanceID'&chest_type_id=1&game_instance_id=1&count=50'
 
     while [[ $remainingSilver -ge 50 ]]; do
-        curl -sX POST -H "$header" "$baseUrl$callType$params" >> results-$time.json
-        remainingSilver=$(jq '.chests_remaining | select ( . != null )' <results-$time.json | sort -h | head -1)
-        echo "remaining: $remainingSilver"
+        curl -sX POST -H "$header" "$baseUrl$callType$params" >> ./results/results-$time.json
+        remainingSilver=$(jq '.chests_remaining | select ( . != null )' <./results/results-$time.json | sort -h | head -1)
+        echo "remaining chests: $remainingSilver"
         sleep 2
     done;
     echo "Done opening Silver chests."
 }
 
 #init
-cd ~/temp/Idle
 json=$(get_defines)
 
 #start here
